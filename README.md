@@ -21,4 +21,4 @@ app-name is chess server. Players on this website can play chess games against e
 ![image](https://user-images.githubusercontent.com/99115851/207410307-68f6fe07-6ed2-451c-afc0-d33352c9614f.png)
 ![image](https://user-images.githubusercontent.com/99115851/207410393-6d480b06-0061-405f-95c1-7b9d86fee37a.png)
 ![image](https://user-images.githubusercontent.com/99115851/207410434-0526a383-7777-4f1b-9439-03d24de16abf.png)
-![image](https://user-images.githubusercontent.com/99115851/207410468-ba0faca9-0292-4cdf-a8c3-6cdbe46d5fb1.png)
+![image](https://user-images.githubusercontent.com/99115851/207413191-0c46ef38-7e04-48be-9d40-0e53c557de35.png)
