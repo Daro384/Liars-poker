@@ -7,12 +7,12 @@ app-name is chess server. Players on this website can play chess games against e
 --
 
 ## User stories
-  User can create an account
-  can Login to their personal account
-  can see his rating and change his display name
-  user can queue up for chess games at various time controls.
-  user can play a full game against another player, while being able to chat to the other player
-  user can review their games by looking at their game history. 
+  * User can create an account
+  * can Login to their personal account
+  * can see his rating and change his display name
+  * user can queue up for chess games at various time controls.
+  * user can play a full game against another player, while being able to chat to the other player
+  * user can review their games by looking at their game history. 
   
 ## Database Structure
 ![image](https://user-images.githubusercontent.com/99115851/207410179-71a89519-2800-4592-89a2-d323495485f1.png)
