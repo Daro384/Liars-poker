@@ -1,10 +1,7 @@
 # app-name
 
-## Project Pitch: 
-app-name is chess server. Players on this website can play chess games against eachother. app-name will keep track of your chess history and will give everyone an elo rating.
-
 ## Description
---
+app-name is chess server. Players on this website can play chess games against eachother. app-name will keep track of your previous chess games. All players will be given an elo rating that changes based on performance.
 
 ## User stories
   * User can create an account
