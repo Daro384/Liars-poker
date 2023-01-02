@@ -3,7 +3,8 @@ import React from "react"
 import { Routes , Route, BrowserRouter as Router} from "react-router-dom"
 import LoginForm from "./Login/LoginForm.js"
 import HomePage from "./Home/HomePage.js"
-import ChessPage from './Game/ChessPage';
+import ChessPage from './Game/ChessPage'
+import SignUp from "./SignUp/SignUp.js"
 
 function App() {
 
@@ -11,8 +12,12 @@ function App() {
     <Router>
       <Routes>
         <Route
-          exact path="/login"
+          exact path="/"
           element={<LoginForm/>}
+        />
+        <Route
+          exact path="/signup"
+          element={<SignUp/>}
         />
         <Route
           exact path="/home"

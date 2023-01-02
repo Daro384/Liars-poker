@@ -36,7 +36,7 @@ class WaitroomsController < ApplicationController
             
             if theInviter[:invite] == my_id
                 #create new game with me as white and set inviter's inGame to the game ID
-                new_game = Game.create!(white_player_id: my_id, black_player_id:nil, winner:nil)
+                new_game = Game.create!(white_player_id: my_id, black_player_id:nil, winner:nil, ongoing:true, latest_position:nil, end_cause:nil)
                 game_id = new_game[:id]
                 theInviter.update(inGame: game_id)
                 render json: {game_id: game_id}

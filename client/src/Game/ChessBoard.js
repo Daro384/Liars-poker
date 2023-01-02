@@ -1,23 +1,22 @@
 import React from "react";
 import ChessCell from "./ChessCell.js"
 
-const ChessBoard = ({boardArray, setMoveOptions, moveOptions}) => {
-    
-    const grid = boardArray.map(cell => {
+const ChessBoard = ({board, callBackPiece, selectedPiece, myColor}) => {
+    const grid = board.map(cell => {
         return (
             <ChessCell 
                 key={cell.position} 
                 name={cell.name} 
                 piece={cell} 
-                moveOptions={moveOptions} 
-                setMoveOptions={setMoveOptions} 
-                board={boardArray}
+                callBackPiece={callBackPiece}
+                selectedPiece={selectedPiece}
+                myColor={myColor}
             />
         )
     })
             
     return (
-        <div className="chess-board">{grid}</div>
+        <div className={`chess-board ${myColor}`}>{grid}</div>
     )
 }
 

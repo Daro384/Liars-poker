@@ -6,19 +6,34 @@
 }
 
 .chess-cell {
-    /* width: 100px; */
+    width: 100px;
     height: 100px;
     background-color: white;
     border-style: solid;
     border-width: 1px;
     text-align: center;
+    font-size: 70px;
 }
 
 .chess-option {
-    /* width: 100px; */
+    width: 100px;
     height: 100px;
     background-color: lightblue;
     border-style: solid;
     border-width: 1px;
     text-align: center;
+    font-size: 70px;
 }
+
+.white {
+    transform: rotate(180deg);
+}
+
+.white-square{
+    background-color: rgb(193, 229, 241);
+}
+
+.black-square{
+    background-color: rgb(0, 167, 223);
+}
+

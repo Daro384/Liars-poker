@@ -1,5 +1,8 @@
 import React,{useState} from "react";
 import { useNavigate } from "react-router-dom";
+import "./Login.css"
+const padlockImg = "https://i.imgur.com/A6nFgN9.png"
+const userImg = "https://i.imgur.com/faQQJ5O.png"
 
 const LoginForm = () => {
     const navigate = useNavigate()
@@ -7,8 +10,21 @@ const LoginForm = () => {
     //controlled form for inputs
     const [formData, setFormData] = useState({username:"", password:""})
 
+    //wrong password
+    const [valid, setValid] = useState(true)
+
+    const alert = valid ? 
+    <></>
+    : 
+    <div className="alert">
+        <p>Username or Password is incorrect</p>
+    </div>
     const handleInputChange = event => {
         setFormData({...formData, [event.target.name]:event.target.value})
+    }
+
+    const handleSignup = () => {
+        navigate("/signup")
     }
 
     const handleSubmit = event => {
@@ -20,31 +36,64 @@ const LoginForm = () => {
         })
         .then(resp => resp.json())
         .then(confirmation => {
-            if (confirmation.error) console.log("alert the user that they entered wrong username or password")
+            if (confirmation.error) setValid(false)
             else navigate("/home")
         })
     }   
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                name="username"
-                placeholder="Please enter your username"
-                onChange={handleInputChange}
-            />
-            <br/>
-            <input 
-                type="password"
-                name="password"
-                placeholder="Please enter your password"
-                onChange={handleInputChange}
-            />
-            <input
-                type="submit"
-                value="Submit"
-            />
-        </form>
+        <div id="start-div">
+            <h2 className="login title">APP TITLE</h2>
+            <form onSubmit={handleSubmit}>
+                {alert}
+                <div id="username">
+                    <div className="input-field">
+                        <img src={userImg}/>
+                        <input
+                            className="login-details"
+                            type="text"
+                            name="username"
+                            placeholder="Please enter your username"
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                </div>
+                
+                <div id="password">
+                    <div className="input-field">
+                        <img src={padlockImg}/>
+                        <input 
+                            className="login-details"
+                            type="password"
+                            name="password"
+                            placeholder="Please enter your password"
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                </div>
+                
+                <br/>
+
+                <input
+                    id="login-button"
+                    type="submit"
+                    value="Log In"
+                />
+            </form>
+
+            <div id="divider">
+                    <div className="line left"></div>
+                    <p>New?</p>
+                    <div className="line right"></div>
+            </div>
+                
+            <div id="new-user">
+                <button onClick={handleSignup}>Sign up</button>
+                <p>or</p>
+                <button>Play as guest</button>
+            </div>
+        </div>
+
     )
 }
 

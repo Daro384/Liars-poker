@@ -1,5 +1,6 @@
 import React,{useState, useEffect} from "react";
 import Searching from "./Searching";
+import "./Home.css"
 
 
 const HomePage = () => {
@@ -15,29 +16,39 @@ const HomePage = () => {
 
     const showSearching = search ? <Searching search={search} setSearch={setSearch} me={me}/> : <></>
 
-    const handleCreate = () => {
-        fetch("/users", {
-            method:"POST",
-            headers: {"content-type":"application/json"},
-            body: JSON.stringify({
-                username: "Joseph",
-                password: "1234",
-                display_name: "LoL-is-Better",
-                rating: 1383
-            })
-        })
-    }
-
-    const handleQuickPlay = event => {
+    const handlePlay = () => {
         setSearch(true)
     }
 
 
     return (
         <>
-            <button onClick={handleQuickPlay}>Quick Play</button>
+            <div id="main-holder">
+                <div className="play-holder">
+                    <div id="match-made">
+                        <div 
+                            onClick={handlePlay}
+                            className="match"
+                        >1+1<br/>Bullet
+                        </div>
+                        
+                        <div 
+                            onClick={handlePlay}
+                            className="match"
+                        >3+1<br/>Blitz
+                        </div>
+
+                        <div 
+                            onClick={handlePlay}
+                            className="match"
+                        >10+1<br/>Rapid
+                        </div>
+                    </div>
+                    <div id="custom">Custom</div>
+                </div>
+            </div>
             {showSearching}
-            <button onClick={handleCreate}>create</button>
+            
         </>
     )
 }
