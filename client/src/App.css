@@ -1,4 +1,5 @@
 .chess-board {
+    float: left;
     width: 816px;
     display: grid;
     background-color: gray;
@@ -36,3 +37,54 @@
     background-color: rgb(0, 167, 223);
 }
 
+#information {
+    margin-left: 50px;
+    background-color: rgb(126, 208, 255);
+    float:left;
+    width: 500px;
+    height: 816px;
+    border-radius: 15px;
+}
+
+#my-details {
+    position: relative;
+    top: 77%;
+    left: 10%;
+    background-color: rgb(173, 225, 255);
+    width: 200px;
+    height: 100px;
+}
+
+#opponent-details {
+    position: relative;
+    top: -5%;
+    left: 10%;
+    background-color: rgb(173, 225, 255);
+    width: 200px;
+    height: 100px;
+}
+
+p.white-timer {
+    width: 50%;
+    margin: 0 0 0 25%;
+    text-align: center;
+    background-color:rgb(193, 229, 241);
+    font-size: 30px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+p.black-timer {
+    width: 50%;
+    margin: 0 0 0 25%;
+    text-align: center;
+    background-color:rgb(0, 167, 223);
+    font-size: 30px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.player-details {
+    margin: 5px 0 0 10px;
+    font-size: 20px;
+}

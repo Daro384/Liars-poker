@@ -16,6 +16,7 @@ const ChessPage = () => {
     const [whiteTime, setWhiteTime] = useState(0)
     const [blackTime, setBlackTime] = useState(0)
     const [promoPawn, setPromoPawn] = useState({promotion: false, position: null})
+    const [players, setPlayers] = useState({myName:"Me", opponentName:"Opponent", myRating:1000, opponentRating:1000})
     // const [stalemateConditions, setStalemateConditions] = useState({fiftyMoveRule:0, repetition:[]})
 
     useEffect(() => {
@@ -59,8 +60,21 @@ const ChessPage = () => {
                     })
                     setBoard(newBoard)
                     setPly(ply + myGame.plies.length)
+
+                    const myColorId = myColor === "white" ? {myID:"white_player_id", opponentID:"black_player_id"} : {myID:"black_player_id", opponentID:"white_player_id"}
+                    fetch(`/users/${myGame[myColorId.myID]}`)
+                    .then(resp => resp.json())
+                    .then(myData => {
+                        fetch(`/users/${myGame[myColorId.opponentID]}`)
+                        .then(resp => resp.json())
+                        .then(userData => {
+                            setPlayers({myName:myData.display_name, myRating:myData.rating, opponentName:userData.display_name, opponentRating:userData.rating})
+                        })
+                    })
+                    
                     
                 }
+                
                 
             })
         }
@@ -68,7 +82,7 @@ const ChessPage = () => {
     },[myId])
 
     const getLatestPly = () => {
-        fetch(`games/${gameStats.gameId}`).then(resp => resp.json())
+        fetch(`/games/${gameStats.gameId}`).then(resp => resp.json())
         .then(game => {
             if (game.plies.length > ply) {
                 let i = 0
@@ -96,7 +110,6 @@ const ChessPage = () => {
     }
 
     useEffect(() => {
-        
         const colorTurn = ply % 2 !== 0 ? "white" : "black"
         let intervalId
         if (colorTurn === gameStats.myColor) {
@@ -677,7 +690,6 @@ const ChessPage = () => {
     }
 
     const callBackPiece = (piece) => {
-        console.log(piece)
         handleSelectedPiece(board, piece, ply, allPieces)
     }
 
@@ -698,6 +710,8 @@ const ChessPage = () => {
     :
     <></>
 
+    const opponentColor = gameStats.myColor === "white" ? "black" : "white"
+
     return (
         <>
             <ChessBoard 
@@ -706,12 +720,20 @@ const ChessPage = () => {
                 selectedPiece={selectedPiece}
                 myColor={gameStats.myColor}
             />
-            <div>
-                <p>{`White time: ${Math.floor(whiteTime/60)}:${addZeroToSingleDigit(whiteTime%60)}`}</p>
-                <p>{`Black time: ${Math.floor(blackTime/60)}:${addZeroToSingleDigit(blackTime%60)}`}</p>
-                {pickPromotion}
+            <div id="information">
+                <div id="my-details">
+                    <p className={`${gameStats.myColor}-timer`}>{Math.floor(whiteTime/60)}:{addZeroToSingleDigit(whiteTime%60)}</p>
+                    <p className="player-details">{players.myName}</p>
+                    <p className="player-details">Rating: {players.myRating}</p>
+                </div>
+                <div id="opponent-details">
+                    <p className={`${opponentColor}-timer`}>{Math.floor(blackTime/60)}:{addZeroToSingleDigit(blackTime%60)}</p>
+                    <p className="player-details">{players.opponentName}</p>
+                    <p className="player-details">Rating: {players.opponentRating}</p>
+                </div>
+                
             </div>
-            
+            {pickPromotion}
         </>
     )
 }
