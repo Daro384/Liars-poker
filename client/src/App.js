@@ -5,6 +5,7 @@ import LoginForm from "./Login/LoginForm.js"
 import HomePage from "./Home/HomePage.js"
 import ChessPage from './Game/ChessPage'
 import SignUp from "./SignUp/SignUp.js"
+import GameViewer from './GameViewer/GameViewer';
 
 function App() {
 
@@ -26,6 +27,10 @@ function App() {
         <Route
           exact path="/game"
           element={<ChessPage/>}
+        />
+        <Route
+          exact path="/review/:id"
+          element={<GameViewer/>}
         />
       </Routes>
     </Router>

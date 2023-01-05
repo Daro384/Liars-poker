@@ -9,13 +9,14 @@ const ChessCell = ({name, piece, callBackPiece, selectedPiece, myColor}) => {
         noColor:{empty:""}
     }
 
-    const option = selectedPiece.moves.includes(piece.position) ? "chess-option":"chess-cell"
+    const option = selectedPiece.moves.includes(piece.position) ? "visible" : "invisible"
     
     const handleClick = () => {
         callBackPiece(piece)
     }
     return (
-        <div onClick={handleClick} className={`${option} ${myColor} ${checkeredPattern}`}>
+        <div onClick={handleClick} className={`chess-cell ${myColor} ${checkeredPattern}`}>
+            <div name="options" className={option}></div>
             {chessPieceDictionary[piece.color][piece.name]}
         </div> 
     )

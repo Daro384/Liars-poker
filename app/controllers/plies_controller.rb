@@ -15,7 +15,7 @@ class PliesController < ApplicationController
 
     private
     def ply_params
-        params.permit(:game_id, :move_index, :move, :color)
+        params.permit(:game_id, :move_index, :move, :color, :time_remaining)
     end
 
 end

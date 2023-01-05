@@ -15,14 +15,13 @@
     font-size: 70px;
 }
 
-.chess-option {
-    width: 100px;
-    height: 100px;
-    background-color: lightblue;
-    border-style: solid;
-    border-width: 1px;
-    text-align: center;
-    font-size: 70px;
+.visible {
+    width: 25px;
+    height: 25px;
+    position:fixed;
+    transform: translate(150%, 150%);
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .white {
