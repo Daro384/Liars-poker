@@ -1,8 +1,11 @@
 .chess-board {
+    margin: 40px 0 0 40px;
     float: left;
     width: 816px;
     display: grid;
     background-color: gray;
+    border-style: solid;
+    border-width: 1px;
     grid-template-columns: auto auto auto auto auto auto auto auto;
 }
 
@@ -38,18 +41,19 @@
 }
 
 #information {
-    margin-left: 50px;
+    margin: 40px 0 0 50px;
     background-color: rgb(126, 208, 255);
     float:left;
-    width: 500px;
+    width: 400px;
     height: 816px;
     border-radius: 15px;
 }
 
 #my-details {
     position: relative;
+    margin-left: 50%;
+    transform: translate(-50%);
     top: 77%;
-    left: 10%;
     background-color: rgb(173, 225, 255);
     width: 200px;
     height: 100px;
@@ -58,7 +62,8 @@
 #opponent-details {
     position: relative;
     top: -5%;
-    left: 10%;
+    margin-left: 50%;
+    transform: translate(-50%);
     background-color: rgb(173, 225, 255);
     width: 200px;
     height: 100px;
@@ -88,3 +93,54 @@ p.black-timer {
     margin: 5px 0 0 10px;
     font-size: 20px;
 }
+
+#chat-holder {
+    position: relative;
+    margin-left: 50%;
+    transform: translate(-50%);
+    width: 300px;
+    height: 350px;
+    background-color: rgb(173, 225, 255);
+    text-align: center;
+}
+
+#message-holder {
+    text-align: left;
+    margin-left: 10%;
+    width: 80%;
+    height: 70%;
+    background-color: rgba(0, 0, 0, 0.2);
+    overflow-y: scroll;
+}
+
+#message-holder p {
+    padding-left: 10px;
+    margin: 5px 0 5px 0;
+}
+
+#promotion-div {
+    position: fixed;
+    left: 215px;
+    top: 335px;
+    width: 400px;
+    height: 150px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-style: solid;
+    border-width: 1px;
+}
+
+#promotion-div button {
+    width: 100px;
+    height: 100px;
+    font-size: 50px;
+}
+
+#promotion-div p {
+    position: relative;
+    color:black;
+    font-size: 50px;
+    margin: 0 0 0 0;
+    text-align: center;
+
+}
+

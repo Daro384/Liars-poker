@@ -10,7 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_02_194208) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_05_161548) do
+  create_table "chats", force: :cascade do |t|
+    t.string "message"
+    t.string "user_id"
+    t.string "game_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "games", force: :cascade do |t|
     t.integer "white_player_id"
     t.integer "black_player_id"

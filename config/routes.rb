@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :chats
   resources :plies
   resources :games
   resources :waitrooms

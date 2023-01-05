@@ -5,10 +5,11 @@ import MiniChessBoard from "./MiniChessBoard"
 import "./Home.css"
 
 
-const HomePage = () => {
+const HomePage = ({setShowNavbar}) => {
 
     const navigate = useNavigate()
-
+    setShowNavbar(true)
+    
     const [search, setSearch] = useState(false)
     const [me, setMe] = useState({id:null})
     const [timeControls, setTimeControls] = useState([10,1])
@@ -17,7 +18,10 @@ const HomePage = () => {
     useEffect(() => {
         fetch("/me")
         .then(resp => resp.json())
-        .then(setMe)
+        .then(mySession => {
+            
+            setMe(mySession)
+        })
     }, [])
 
     useEffect(() => {

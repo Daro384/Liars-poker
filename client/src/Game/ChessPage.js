@@ -1,5 +1,7 @@
 import React,{useState, useEffect} from "react";
 import ChessBoard from "./ChessBoard";
+import ChatBox from "./ChessChat";
+import PromoteView from "./PromoteView";
 
 const ChessPage = () => {
 
@@ -17,6 +19,7 @@ const ChessPage = () => {
     const [blackTime, setBlackTime] = useState(0)
     const [promoPawn, setPromoPawn] = useState({promotion: false, position: null})
     const [players, setPlayers] = useState({myName:"Me", opponentName:"Opponent", myRating:1000, opponentRating:1000})
+    const [chats, setChats] = useState([{message:"", display_name:""}])
     // const [stalemateConditions, setStalemateConditions] = useState({fiftyMoveRule:0, repetition:[]})
 
     useEffect(() => {
@@ -103,9 +106,17 @@ const ChessPage = () => {
                     const timeToSet = newPly.color === "white" ? setWhiteTime : setBlackTime
                     timeToSet(newPly.time_remaining)
                 })
+                
+
+
                 setBoard(newBoard)
                 setPly(ply + i)
             }
+            //setting up chat messages
+            const chatMessages = game.chats.map(message => {
+                return {message:message.message, display_name: message.user_id == gameStats.myId ? players.myName : players.opponentName}
+            })
+            setChats(chatMessages)
         })
     }
 
@@ -700,16 +711,6 @@ const ChessPage = () => {
         } else return number.toString()
     }
 
-    const pickPromotion = promoPawn.promotion ? 
-    <div>
-        <button onClick={() => callBackPromote("rook")}>Rook</button>
-        <button onClick={() => callBackPromote("bishop")}>Bishop</button>
-        <button onClick={() => callBackPromote("knight")}>Knight</button>
-        <button onClick={() => callBackPromote("queen")}>Queen</button>
-    </div>
-    :
-    <></>
-
     const opponentColor = gameStats.myColor === "white" ? "black" : "white"
 
     return (
@@ -731,9 +732,9 @@ const ChessPage = () => {
                     <p className="player-details">{players.opponentName}</p>
                     <p className="player-details">Rating: {players.opponentRating}</p>
                 </div>
-                
+                <ChatBox chats={chats} myId={gameStats.myId} gameId={gameStats.gameId} setChats={setChats} myName={players.myName} opponentName={players.opponentName}/>
             </div>
-            {pickPromotion}
+            <PromoteView promotion={promoPawn.promotion} callBackPromote={callBackPromote} myColor={gameStats.myColor}/>
         </>
     )
 }
