@@ -1,7 +1,9 @@
 import React,{useState, useEffect} from "react";
 import ChessBoard from "./ChessBoard";
+import ChatBox from "./ChessChat";
+import PromoteView from "./PromoteView";
 
-const ChessPage = ({}) => {
+const ChessPage = () => {
 
     const initializeBoard = [...Array(64).keys()].map(square => {
         return {position:square, name:"empty", color:"noColor"}
@@ -12,7 +14,13 @@ const ChessPage = ({}) => {
     const [selectedPiece, setSelectedPiece] = useState({piece:"", moves:[]})
     const [myId, setMyId] = useState(null)
     const [gameStats, setGameStats] = useState({gameId:null, myColor:null, myId:null})
-    const [endText, setEndText] = useState("")
+    // const [endText, setEndText] = useState("")
+    const [whiteTime, setWhiteTime] = useState(0)
+    const [blackTime, setBlackTime] = useState(0)
+    const [promoPawn, setPromoPawn] = useState({promotion: false, position: null})
+    const [players, setPlayers] = useState({myName:"Me", opponentName:"Opponent", myRating:1000, opponentRating:1000})
+    const [chats, setChats] = useState([{message:"", display_name:""}])
+    // const [stalemateConditions, setStalemateConditions] = useState({fiftyMoveRule:0, repetition:[]})
 
     useEffect(() => {
         fetch("/me").then(resp => resp.json())
@@ -27,18 +35,49 @@ const ChessPage = ({}) => {
                 const myGame = games.find(game => {
                     return game.ongoing === true && (game.black_player_id === myId || game.white_player_id === myId)
                 })
+
+                setWhiteTime(60 * myGame.time) //initializing clocks
+                setBlackTime(60 * myGame.time)
                 
                 if (myGame) {
                     const myColor = myGame.white_player_id === myId ? "white" : "black"
-                    setGameStats({gameId:myGame.id, myColor:myColor, myId:myId})
+
+                    setGameStats({gameId:myGame.id, myColor:myColor, myId:myId, increment_time:myGame.increment_time})
                     let newBoard = board
+                    let specialMove = false
                     myGame.plies.forEach(ply => {
                         const [piecePosition, move] = MoveNotationToIndex(ply.move)
-                        newBoard = newBoard[piecePosition].movePiece(newBoard, move)
+                        let assigner = newBoard[piecePosition].movePiece(newBoard, move) //can't for the life of me figure out why I can't just mass assign like this: [newBoard, specialMove] (gives me errors)
+                        newBoard = assigner[0]
+                        specialMove = assigner[1]
+
+                        if (ply.move[4] === "*") { //setting up promotion
+                            newBoard[move] = newBoard[move].promote(ply.move.slice(5))
+                        }
+
+                        //setting up time
+                        const timeToSet = ply.color === "white" ? setWhiteTime : setBlackTime
+                        if (ply !== 0) {
+                            timeToSet(ply.time_remaining)
+                        }
                     })
                     setBoard(newBoard)
                     setPly(ply + myGame.plies.length)
+
+                    const myColorId = myColor === "white" ? {myID:"white_player_id", opponentID:"black_player_id"} : {myID:"black_player_id", opponentID:"white_player_id"}
+                    fetch(`/users/${myGame[myColorId.myID]}`)
+                    .then(resp => resp.json())
+                    .then(myData => {
+                        fetch(`/users/${myGame[myColorId.opponentID]}`)
+                        .then(resp => resp.json())
+                        .then(userData => {
+                            setPlayers({myName:myData.display_name, myRating:myData.rating, opponentName:userData.display_name, opponentRating:userData.rating})
+                        })
+                    })
+                    
+                    
                 }
+                
                 
             })
         }
@@ -46,19 +85,38 @@ const ChessPage = ({}) => {
     },[myId])
 
     const getLatestPly = () => {
-        fetch(`games/${gameStats.gameId}`).then(resp => resp.json())
+        fetch(`/games/${gameStats.gameId}`).then(resp => resp.json())
         .then(game => {
             if (game.plies.length > ply) {
                 let i = 0
                 let newBoard = board
+                let specialMove = false
                 game.plies.slice(ply).forEach(newPly => {
                     const [piecePosition, move] = MoveNotationToIndex(newPly.move)
-                    newBoard = newBoard[piecePosition].movePiece(newBoard, move)
+                    let assigner = newBoard[piecePosition].movePiece(newBoard, move) //read comment on line 45
+                    newBoard = assigner[0]
+                    specialMove = assigner[1]
                     i += 1
+
+                    if (newPly.move[4] === "*") { //setting up promotion
+                        newBoard[move] = newBoard[move].promote(newPly.move.slice(5))
+                    }
+
+                    //setting up time
+                    const timeToSet = newPly.color === "white" ? setWhiteTime : setBlackTime
+                    timeToSet(newPly.time_remaining)
                 })
+                
+
+
                 setBoard(newBoard)
                 setPly(ply + i)
             }
+            //setting up chat messages
+            const chatMessages = game.chats.map(message => {
+                return {message:message.message, display_name: message.user_id == gameStats.myId ? players.myName : players.opponentName}
+            })
+            setChats(chatMessages)
         })
     }
 
@@ -72,7 +130,22 @@ const ChessPage = ({}) => {
             clearInterval(intervalId)
         }
 
-    }, [ply])
+    }, [gameStats, ply]) //game
+
+    
+    useEffect(() => {
+        const colorToDecrement = ply % 2 === 0 ? [setWhiteTime, whiteTime] : [setBlackTime, blackTime]
+        let counter = 0
+        const handleTime = () => {
+            counter += 1
+            if (ply !== 0) colorToDecrement[0](colorToDecrement[1] - counter) //setColorTime(colorTime - 1)
+        }
+        const intervalId = setInterval(handleTime, 1000)
+        return () => {
+            clearInterval(intervalId)
+        } 
+
+    },[ply])
     
 
     useEffect(() => {
@@ -136,7 +209,7 @@ const ChessPage = ({}) => {
             }
             newBoard[position] = this
             this.firstMove = false
-            return newBoard
+            return [newBoard, false]
         }
 
         indexToCoordinates(positionIndex) { //takes the index and spits out a coordinate in [#column, #row] form
@@ -153,6 +226,13 @@ const ChessPage = ({}) => {
     ///////////////////////////////////////////////////defining pieces//////////////////////////////////////////////
 
     class Pawn extends ChessPiece {
+
+        constructor(name, position, color){
+            super(name, position, color)
+            this.enPassant = null
+        }
+
+
         findMoves(board){
             const moves = []
             const thisPositionCoordinate = this.indexToCoordinates(this.position)
@@ -162,6 +242,9 @@ const ChessPage = ({}) => {
             const range = this.firstMove ? 2 : 1
 
             let potentialMove = [thisPositionCoordinate[0] + moveTranslationVector[0], thisPositionCoordinate[1] + moveTranslationVector[1]]
+
+            if (this.enPassant) moves.push(this.enPassant) 
+
             for (let i = 0; i < range; i++) {
                 const potentialMoveIndex = this.coordinateToIndex(...potentialMove)
                 if (this.outOfBounds(...potentialMove)) break
@@ -180,7 +263,59 @@ const ChessPage = ({}) => {
                 }
             })
             return moves
-            
+        }
+        movePiece(board, position) {
+            const newBoard = [...board]
+            newBoard[this.position] = {position:this.position, name:"empty", color:"noColor"}
+            //En Passant
+            if (Math.abs(this.position - position) === 16) { //only possible if pawn moves two squares
+                const positionCoordinate = this.indexToCoordinates(position)
+                for (const i of [-1, 1]){
+                    const adjacentCoordinate = [positionCoordinate[0] + i, positionCoordinate[1]]
+                    if (this.outOfBounds(adjacentCoordinate)) continue
+                    const adjacentIndex = this.coordinateToIndex(...adjacentCoordinate)
+                    if (board[adjacentIndex].name === "pawn" && board[adjacentIndex].color === this.opponentColor){
+                        board[adjacentIndex].enPassant = (this.position + position) / 2
+                    }
+                }
+            }
+            this.position = position
+            if (board[position].name !== "empty"){
+                const capturedPiece = board[position]
+                capturedPiece.captured = true
+                capturedPiece.position = null
+            }
+            if (this.enPassant === position){
+                //en Passant
+                const behindSquare = this.color === "white" ? position - 8 : position + 8
+                const capturedPiece = board[behindSquare]
+                console.log("i am capturing this piece: ")
+                console.log(capturedPiece)
+                capturedPiece.captured = true
+                capturedPiece.position = null
+                newBoard[behindSquare] = {position:behindSquare, color:"noColor", name:"empty"}
+            }
+            let specialMove = false
+            if ([0,7].includes(Math.floor(this.position / 8))) {
+                specialMove = "promote" 
+            }
+            newBoard[position] = this
+            this.firstMove = false
+            this.enPassant = false
+            return [newBoard, specialMove]
+        }
+
+        promote(pieceName) {
+            switch (pieceName){
+                case "rook":
+                    return new Rook("rook", this.position, this.color)
+                case "knight":
+                    return new Knight("knight", this.position, this.color)
+                case "bishop":
+                    return new Bishop("bishop", this.position, this.color)
+                case "queen":
+                    return new Queen("queen", this.position, this.color)
+            }
         }
         
     }
@@ -295,6 +430,7 @@ const ChessPage = ({}) => {
                     if (this.outOfBounds(...threatCoordinate)) break
                     const threatPosition = this.coordinateToIndex(...threatCoordinate)
                     if (this.allyPiece(threatPosition, this.color, board)) break
+                    if (![threatPiece, "empty"].includes(board[threatPosition].name)) break
                     if (threatPiece === board[threatPosition].name && board[threatPosition].color === this.opponentColor) {
                         checked = true
                         break
@@ -308,7 +444,7 @@ const ChessPage = ({}) => {
         isCheckedByPawn (board) {
             let checked = false
             const kingCoordinate = this.indexToCoordinates(this.position)
-            const translationVectors = { white:[ [1,1], [-1,1] ], black:[ [1,-1], [-1,-1] ] }
+            const translationVectors = { white:[ [1,-1], [-1,-1] ], black:[ [1,1], [-1,1] ] } //think backwards
 
             translationVectors[this.opponentColor].forEach(translation => {
                 let threatCoordinate = [kingCoordinate[0] + translation[0], kingCoordinate[1] + translation[1]]
@@ -320,6 +456,7 @@ const ChessPage = ({}) => {
                     return
                 }
             })
+            if (checked) console.log("check")
             return checked
         }
 
@@ -337,11 +474,52 @@ const ChessPage = ({}) => {
                     moves.push(this.coordinateToIndex(...potentialMove))
                 }
                 else moves.push(this.coordinateToIndex(...potentialMove))
-                    
                 }
             )
+            //adding castling
+            if (this.firstMove) {
+                const originalKingPosition = this.position
+                for (const a of [[-1, -2],[ 1, 2, 3]]){ //i think it works????
+                    let illegal = false
+                    for (const i of a) {
+                        if (illegal) break
+                        this.position = originalKingPosition + i
+                        if (board[this.position].name !== "empty") illegal = true
+                        else if (this.isChecked(board)) illegal = true                    
+                    }
+                    const rookSquare = a[0][0] < 0 ? originalKingPosition - 3 : originalKingPosition + 4
+                    if (board[rookSquare].name !== "rook" || !board[rookSquare].firstMove) illegal = true
+
+                    if (!illegal) moves.push(originalKingPosition + a[1])
+                }
+                this.position = originalKingPosition
+            }
             return moves
         }
+
+        movePiece(board, position) {
+            const newBoard = [...board]
+            newBoard[this.position] = {position:this.position, name:"empty", color:"noColor"}
+            const originalPosition = this.position
+            this.position = position
+            if (board[position].name !== "empty"){
+                const capturedPiece = board[position]
+                capturedPiece.captured = true
+                capturedPiece.position = null
+            }
+            //move rook when king castles
+            if (Math.abs(originalPosition - position) === 2) { //can only happen if king moves 2 squares horizontally (which only happens during castling)
+                const rookPosition = originalPosition - position > 0 ? originalPosition - 3 : originalPosition + 4 //determining which rook
+                const theRook = newBoard[rookPosition] //selecting correct rook
+                newBoard[rookPosition] = {position:rookPosition, name:"empty", color:"noColor"} //removing rook from original square
+                theRook.position = (originalPosition + position) / 2 //updating rook position
+                newBoard[theRook.position] = theRook //placing rook on correct square
+            }
+            newBoard[position] = this
+            this.firstMove = false
+            return [newBoard,false]
+        }
+
         isChecked(board) {
             let checked = false
             const knightTranslationVectors = [[-2,1], [-1,2], [1,2], [2,1], [2,-1], [1,-2], [-1,-2], [-2,-1]]
@@ -401,8 +579,14 @@ const ChessPage = ({}) => {
         const kings = allPieces.kings
         const king = turnColor === kings[0].color ? kings[0] : kings[1]
         if (legalMovesCount(board, turnColor, allPieces) === 0){
-            if (king.isChecked(board)) return "checkmate"
-            else return "stalemate"
+            if (king.isChecked(board)) {
+                console.log("Checkmate")
+                return "checkmate"
+            }
+            else {
+                console.log("stalemate")
+                return "stalemate"
+            }
         }
     }
 
@@ -433,44 +617,87 @@ const ChessPage = ({}) => {
         return [piecePosition, move]
     }
 
-    const makePly = (board, piece, move, ply, allPieces) => {
+    const makePly = (board, piece, move, ply, allPieces, promote=false) => {
         const turnColor = ply % 2 === 0 ? "white" : "black"
         if (piece.color === turnColor){
             const startPosition = piece.position
-            const newBoard = piece.movePiece(board, move)
+            let newBoard
+            let specialMove
+            [newBoard, specialMove] = piece.movePiece(board, move)
+
+            //remove En Passant from all of your colored pawns (they only have one move to do En passant)
+            allPieces.pawns.filter(onePiece => onePiece.color === turnColor).forEach(pawn => pawn.enPassant = null)
+
             setBoard(newBoard)
             setPly(ply + 1)
             const end = checkEndConditions(newBoard, turnColor, allPieces)
-            if (end) {
-                fetch(`/games/${gameStats.gameId}`, {
-                    method:"PATCH",
-                    headers:{"content-type":"application/json"},
-                    body:JSON.stringify({ongoing:false, winner:myId, latest_position:"string of position(adding this later)", end_cause:end})
-                }).then(resp => resp.json())
-                .then(console.log)
+            let chessNotationMove = convertMoveToMoveNotation(startPosition, move)
+
+            if (promote) chessNotationMove += `*${promote}`
+
+            //handling time
+            const whichTime = turnColor === "white" ? whiteTime : blackTime
+            const whichTimeToSet = turnColor === "white" ? setWhiteTime : setBlackTime
+            whichTimeToSet(whichTime + gameStats.increment_time)
+
+            //making a string of the board position
+            const zipPiece = (piece, position, color) => { 
+                const nameReducer = {pawn:"p", rook:"r", knight:"n", bishop:"b", queen:"q", king:"k"}
+                let zipped = nameReducer[piece] + position
+
+                if (color === "white") zipped = zipped.toUpperCase()
+                return zipped
             }
-            const chessNotationMove = convertMoveToMoveNotation(startPosition, move)
+
+            let zippedPosition = ""
+            Object.values(allPieces).flat().filter(piece => piece.position !== null).forEach(piece => zippedPosition += zipPiece(piece.name, piece.position, piece.color))
+            
+
             fetch("/plies", {
                 method: "POST",
                 headers:{"content-type":"application/json"},
-                body:JSON.stringify({game_id:gameStats.gameId, move_index:ply, color:gameStats.myColor, move:chessNotationMove})
+                body:JSON.stringify({game_id:gameStats.gameId, move_index:ply, color:gameStats.myColor, move:chessNotationMove, time_remaining:whichTime + gameStats.increment_time})
             }).then(resp => resp.json())
+            
+            const patchBody = end ? {ongoing:false, winner:myId, latest_position:zippedPosition, end_cause:end} : {latest_position: zippedPosition}
+            fetch(`/games/${gameStats.gameId}`, {
+                method:"PATCH",
+                headers:{"content-type":"application/json"},
+                body:JSON.stringify(patchBody)
+            }).then(resp => resp.json())
+            // .then(console.log)
         }
     }
 
     const handleSelectedPiece = (board, piece, ply, allPieces) => {
-        if (selectedPiece.moves.includes(piece.position)) { //Moving a piece
+        if (selectedPiece.piece.name === "pawn" && [0,7].includes(Math.floor(piece.position / 8))) {
+            setPromoPawn({promotion:true, position:piece.position})
+            // setSelectedPiece({...selectedPiece, move: })
+        }
+
+        else if (selectedPiece.moves.includes(piece.position)) { //Moving a piece
             setSelectedPiece({piece:"", moves:[]})
             makePly(board, selectedPiece.piece, piece.position, ply, allPieces)
+            setPromoPawn({promotion:false, position:null})
             return 
         }
         else if (piece.name !== "empty" && piece.color === gameStats.myColor) { //re-selecting piece options if another movable piece is pressed
             const legalMoves = findLegalMoves(board, piece, allPieces)
+            setPromoPawn({promotion:false, position:null})
             return setSelectedPiece({piece:piece, moves:legalMoves})
         }
         else { //resetting piece options if an empty square is clicked
+            setPromoPawn({promotion:false, position:null})
             return setSelectedPiece({piece:"", moves:[]})
         }
+    }
+
+    const callBackPromote = (pieceName) => {
+        const pawnIndex = allPieces.pawns.findIndex(pawn => pawn.position === selectedPiece.piece.position)
+        allPieces.pawns[pawnIndex] = allPieces.pawns[pawnIndex].promote(pieceName)
+        setPieces({...allPieces})
+        makePly(board, allPieces.pawns[pawnIndex], promoPawn.position, ply, allPieces, pieceName)
+        setPromoPawn({promotion:false, position:null})
     }
 
     const callBackPiece = (piece) => {
@@ -478,6 +705,13 @@ const ChessPage = ({}) => {
     }
 
     /////////////////////////////////////////////
+    const addZeroToSingleDigit = number => { //example: 4 => 04
+        if (number < 10) {
+            return "0" + number.toString()
+        } else return number.toString()
+    }
+
+    const opponentColor = gameStats.myColor === "white" ? "black" : "white"
 
     return (
         <>
@@ -487,6 +721,20 @@ const ChessPage = ({}) => {
                 selectedPiece={selectedPiece}
                 myColor={gameStats.myColor}
             />
+            <div id="information">
+                <div id="my-details">
+                    <p className={`${gameStats.myColor}-timer`}>{Math.floor(whiteTime/60)}:{addZeroToSingleDigit(whiteTime%60)}</p>
+                    <p className="player-details">{players.myName}</p>
+                    <p className="player-details">Rating: {players.myRating}</p>
+                </div>
+                <div id="opponent-details">
+                    <p className={`${opponentColor}-timer`}>{Math.floor(blackTime/60)}:{addZeroToSingleDigit(blackTime%60)}</p>
+                    <p className="player-details">{players.opponentName}</p>
+                    <p className="player-details">Rating: {players.opponentRating}</p>
+                </div>
+                <ChatBox chats={chats} myId={gameStats.myId} gameId={gameStats.gameId} setChats={setChats} myName={players.myName} opponentName={players.opponentName}/>
+            </div>
+            <PromoteView promotion={promoPawn.promotion} callBackPromote={callBackPromote} myColor={gameStats.myColor}/>
         </>
     )
 }

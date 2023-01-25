@@ -1,0 +1,15 @@
+#nav {
+    position:fixed;
+    top:5px;
+    left: 50%;
+    transform: translate(-50%);
+    /* width: 500px; */
+}
+
+#nav div {
+    border-style:solid;
+    border-width: 1px;
+    float:left;
+    padding: 10px;
+    background-color: rgb(115, 176, 255);
+}

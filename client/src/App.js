@@ -1,15 +1,23 @@
 import './App.css';
-import React from "react"
+import React,{useState} from "react"
 import { Routes , Route, BrowserRouter as Router} from "react-router-dom"
 import LoginForm from "./Login/LoginForm.js"
 import HomePage from "./Home/HomePage.js"
 import ChessPage from './Game/ChessPage'
 import SignUp from "./SignUp/SignUp.js"
+import GameViewer from './GameViewer/GameViewer';
+import NavBar from './NavBar/Navbar';
 
 function App() {
 
+  const [showNavbar, setShowNavbar] = useState(false)
+  const updateShowBar = (boolean) => {
+    setShowNavbar(boolean)
+  }
+
   return (
     <Router>
+      <NavBar showNavbar={showNavbar}/>
       <Routes>
         <Route
           exact path="/"
@@ -21,11 +29,15 @@ function App() {
         />
         <Route
           exact path="/home"
-          element={<HomePage/>}
+          element={<HomePage setShowNavbar={updateShowBar}/>}
         />
         <Route
           exact path="/game"
           element={<ChessPage/>}
+        />
+        <Route
+          exact path="/review/:id"
+          element={<GameViewer/>}
         />
       </Routes>
     </Router>

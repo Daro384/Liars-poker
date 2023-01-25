@@ -10,8 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+ActiveRecord::Schema[7.0].define(version: 2023_01_05_161548) do
+  create_table "chats", force: :cascade do |t|
+    t.string "message"
+    t.string "user_id"
+    t.string "game_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
-ActiveRecord::Schema[7.0].define(version: 2022_12_21_055132) do
   create_table "games", force: :cascade do |t|
     t.integer "white_player_id"
     t.integer "black_player_id"
@@ -21,6 +28,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_21_055132) do
     t.boolean "ongoing"
     t.string "latest_position"
     t.string "end_cause"
+    t.integer "time"
+    t.integer "increment_time"
   end
 
   create_table "histories", force: :cascade do |t|
@@ -40,6 +49,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_21_055132) do
     t.string "move"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "time_remaining"
   end
 
   create_table "users", force: :cascade do |t|
@@ -54,10 +64,11 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_21_055132) do
   create_table "waitrooms", force: :cascade do |t|
     t.integer "player_id"
     t.integer "rating"
-    t.integer "invite"
-    t.integer "inGame"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "opponent"
+    t.integer "time"
+    t.integer "time_increment"
   end
 
 end
