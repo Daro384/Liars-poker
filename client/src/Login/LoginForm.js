@@ -43,7 +43,7 @@ const LoginForm = () => {
 
     return (
         <div id="start-div">
-            <h2 className="login title">APP TITLE</h2>
+            <h2 className="login title">SOLID CHESS</h2>
             <form onSubmit={handleSubmit}>
                 {alert}
                 <div id="username">
