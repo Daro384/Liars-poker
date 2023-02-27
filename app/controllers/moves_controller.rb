@@ -14,7 +14,7 @@ class MovesController < ApplicationController
     private
     #strong parameters
     def move_params
-        params.permit(:lobby_name, :ongoing, :rng_hash)
+        params.permit(:game_id, :player_id, :hand)
     end
 
     def render_unprocessable_entity_response(exception)

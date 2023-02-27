@@ -6,6 +6,10 @@ class GamesController < ApplicationController
         render json: Game.all
     end
 
+    def show
+        render json: Game.find(params[:id])
+    end
+
     def create
         game = Game.create!(game_params)
         render json: game, status: :created
@@ -26,7 +30,7 @@ class GamesController < ApplicationController
     private
     #strong parameters
     def game_params
-        params.permit(:lobby_name, :ongoing, :rng_hash)
+        params.permit(:lobby_name, :ongoing, :rng_hash, :host_id)
     end
 
     def render_unprocessable_entity_response(exception)

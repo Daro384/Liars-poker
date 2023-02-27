@@ -31,7 +31,7 @@ function App() {
           element={<HomePage setShowNavbar={updateShowBar}/>}
         />
         <Route
-          exact path="/game"
+          exact path="/game/:id"
           element={<GamePage/>}
         />
       </Routes>

@@ -14,7 +14,7 @@ class PlayersController < ApplicationController
     private
     #strong parameters
     def player_params
-        params.permit(:lobby_name, :ongoing, :rng_hash)
+        params.permit(:player_id, :display_name, :game_id)
     end
 
     def render_unprocessable_entity_response(exception)

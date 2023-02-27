@@ -40,15 +40,17 @@ const HomePage = ({setShowNavbar}) => {
     useEffect(() => {
         if (selectedLobbyId) {
             setLobbyData(hostedGames.find(hostData => selectedLobbyId === hostData.id))
-        }
 
-        fetch("/games")
-        .then(resp => resp.json())
-        .then(games => {
-            if (games.find(game => (game.host_id === selectedLobbyId))) {
-                //route to game page
-            }
-        })
+            fetch("/games")
+            .then(resp => resp.json())
+            .then(games => {
+                let gameId
+                if (games.find(game => {
+                    gameId = game.id
+                    return (game.host_id === selectedLobbyId)
+                })) navigate(`/game/${gameId}`)
+            })
+        }
     },[hostedGames])
 
     const onSubmitLobby = (event) => {
@@ -113,13 +115,8 @@ const HomePage = ({setShowNavbar}) => {
             rng_hash:null,
             host_id:lobbyData.id
         }
-        
-        const playerBody = {
-            player_id:me.id,
-            display_name:me.display_name,
-            game_id:lobbyData.id
-        }
-
+        let gameId
+        const promiseList = []
         fetch("/games", {
             method:"post",
             headers: {"content-type":"application/json"},
@@ -127,14 +124,26 @@ const HomePage = ({setShowNavbar}) => {
         })
         .then(resp => resp.json())
         .then(gameData => {
-            fetch("/players", {
-                method:"post",
-                headers: {"content-type":"application/json"},
-                body:JSON.stringify(playerBody)
-            })
-        }).then(
-            //route to game page
-        )
+            gameId = gameData.id
+            lobbyData.participants.forEach(participant => {
+                promiseList.push(fetch("/players", {
+                    method:"post",
+                    headers: {"content-type":"application/json"},
+                    body:JSON.stringify(
+                        {
+                            player_id:participant.player_id,
+                            display_name:participant.display_name,
+                            game_id:gameId
+                        }
+                    )
+                }))
+            })  
+            Promise.all(promiseList).then(
+                fetch(`/host/${selectedLobbyId}`, {method:'DELETE'}).then(
+                    navigate(`/game/${gameId}`)
+                )
+            )  
+        })
     }
 
     const handleJoin = event => {
