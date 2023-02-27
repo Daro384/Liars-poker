@@ -19,7 +19,6 @@ const NavBar = ({showNavbar}) => {
                 fetch("/games")
                 .then(resp => resp.json())
                 .then(gameData => {
-                    console.log(sessionResponse)
                     gameData.find(game => [game.white_player_id, game.black_player_id].includes(sessionResponse.id)) ? setInGame(true) : setInGame(false)
                 })
             }

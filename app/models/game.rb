@@ -1,4 +1,4 @@
 class Game < ApplicationRecord
-    has_many :plies
-    has_many :chats
+    has_many :players
+    has_many :moves
 end

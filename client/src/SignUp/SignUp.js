@@ -54,7 +54,7 @@ const SignUp = () => {
 
     return (
     <div id="sign-up-div">
-        <h2 className="login title">SOLID CHESS</h2>
+        <h2 className="login title">NESO HOLD'EM</h2>
         <form>
             <div className="input-field">
                 <label>Display Name</label>

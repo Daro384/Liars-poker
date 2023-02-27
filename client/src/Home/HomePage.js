@@ -1,104 +1,200 @@
 import React,{useState, useEffect} from "react"
-import { useNavigate } from "react-router-dom"
-import Searching from "./Searching"
-import MiniChessBoard from "./MiniChessBoard"
+import { json, useNavigate } from "react-router-dom"
 import "./Home.css"
+
+import LobbyDisplay from "./LobbyDisplay"
 
 
 const HomePage = ({setShowNavbar}) => {
 
     const navigate = useNavigate()
     setShowNavbar(true)
-    
-    const [search, setSearch] = useState(false)
-    const [me, setMe] = useState({id:null})
-    const [timeControls, setTimeControls] = useState([10,1])
-    const [myGames, setMyGames] = useState([{latest_position:"", white_player_id:null}])
 
+    const [me, setMe] = useState({id:null})
+    const [showCreate, setShowCreate] = useState(false)
+    const [gameName, setGameName] = useState("")
+    const [hostedGames, setHostedGames] = useState([])
+
+    const [selectedLobbyId, setSelectedLobbyId] = useState(null)
+    const [lobbyData, setLobbyData] = useState({})
+    
     useEffect(() => {
+        let intervalId
         fetch("/me")
         .then(resp => resp.json())
         .then(mySession => {
-            
             setMe(mySession)
+            setGameName(mySession.username + "'s game")
+            intervalId = setInterval(() => {
+                fetch("/hosts")
+                .then(resp => resp.json())
+                .then(data => {
+                    setHostedGames([...data])
+                })
+            }, 3000);
         })
+        return clearInterval(intervalId)
     }, [])
 
+    //updating lobby data every time we get host data and route to game page when ever game is created
     useEffect(() => {
-        if (me.id) {
-            fetch(`/my_games/${me.id}`)
-            .then(resp => resp.json())
-            .then(games => {
-                games = games.sort((a, b) => b.id - a.id) //sort by id to get the latest games in order
-                setMyGames(games)
-            })
+        if (selectedLobbyId) {
+            setLobbyData(hostedGames.find(hostData => selectedLobbyId === hostData.id))
         }
-    }, [me])
 
-    const showSearching = search ? <Searching search={search} setSearch={setSearch} me={me} timeControls={timeControls}/> : <></>
+        fetch("/games")
+        .then(resp => resp.json())
+        .then(games => {
+            if (games.find(game => (game.host_id === selectedLobbyId))) {
+                //route to game page
+            }
+        })
+    },[hostedGames])
 
-    const handlePlay = (totalTime, timeIncrement) => {
-        setTimeControls([totalTime, timeIncrement])
-        setSearch(true)
+    const onSubmitLobby = (event) => {
+        event.preventDefault()
+        fetch(`/hosts`, {
+            method:"POST",
+            headers: {"content-type":"application/json"},
+            body: JSON.stringify({
+                    player_id:me.id, 
+                    lobby_name:gameName, 
+                    rng_seed:Math.random()
+                })
+        }).then(resp => resp.json())
+        .then(host => {
+            setShowCreate(false)
+            setSelectedLobbyId(host.id)
+            fetch(`/participants`, {
+                method:"POST",
+                headers: {"content-type":"application/json"},
+                body: JSON.stringify({
+                    host_id:host.id,
+                    player_id:me.id, 
+                    display_name:me.display_name
+                })
+            }).then(resp => resp.json())
+            .then(console.log)
+        })
+
+        
     }
 
-    const sideColor = (myId, white_id) => {
-        return myId === white_id ? "white" : "black"
-    }
+    const HostGameSetup = (
+        showCreate ? 
+        <div id="host-create-page">
+            <form>
+                <label>Lobby Name: </label>
+                <input type="text" value={gameName} onChange={(event) => setGameName(event.target.value)}/>
+                <input type="submit" value="Host Lobby" className="submitter" onClick={onSubmitLobby}/>
+            </form>
+            <div id="exit-button" onClick={() => setShowCreate(false)}>X</div>
+            
+        </div>
+        : 
+        <></>
+    )
 
-    const game1Color = sideColor(me.id, myGames[0]?.white_player_id)
-    const game2Color = sideColor(me.id, myGames[1]?.white_player_id)
-    const game3Color = sideColor(me.id, myGames[2]?.white_player_id)
-
-    const handleReviewClick = id => {
-        if (id) navigate(`/review/${id}`)
-    }
-
+    const handleCancel = event => {
+        fetch(`/hosts/${lobbyData.id}`, {method:"DELETE"})
+        .then(setSelectedLobbyId(null))
+    } 
     
+    const handleLeave = event => {
+        fetch(`/participants/${me.id}`, {method:"DELETE"})
+        .then(setSelectedLobbyId(null))
+    }
+
+    const handleStart = event => {
+
+        const gameBody = {
+            lobby_name:gameName,
+            ongoing:true,
+            rng_hash:null,
+            host_id:lobbyData.id
+        }
+        
+        const playerBody = {
+            player_id:me.id,
+            display_name:me.display_name,
+            game_id:lobbyData.id
+        }
+
+        fetch("/games", {
+            method:"post",
+            headers: {"content-type":"application/json"},
+            body:JSON.stringify(gameBody)
+        })
+        .then(resp => resp.json())
+        .then(gameData => {
+            fetch("/players", {
+                method:"post",
+                headers: {"content-type":"application/json"},
+                body:JSON.stringify(playerBody)
+            })
+        }).then(
+            //route to game page
+        )
+    }
+
+    const handleJoin = event => {
+        setSelectedLobbyId(parseInt(event.target.value))
+
+        fetch(`/participants`, {
+            method:"POST",
+            headers: {"content-type":"application/json"},
+            body: JSON.stringify({
+                host_id:event.target.value,
+                player_id:me.id, 
+                display_name:me.display_name
+            })
+        }).then(resp => resp.json())
+    }
+
+    const HostCards = hostData => {
+        return (
+        <div className="host-card" key={hostData.id}>
+            <h3>{hostData.lobby_name}</h3>
+            <p>{hostData.participants.length + "/4 players"}</p>
+            <button value={hostData.id} onClick={handleJoin}>Join</button>
+        </div>
+        )
+    }
+
+
+    const showHostedGames = hostedGames.map(hostData => {
+        if (hostData.player_id === me.id) return
+        else return HostCards(hostData)
+    })
+
+    const lobbyDisplay = selectedLobbyId ? 
+        <LobbyDisplay 
+            lobbyData={lobbyData}
+            myId={me.id}
+            handleStart={handleStart} 
+            handleCancel={handleCancel} 
+            handleLeave={handleLeave}
+        /> 
+        : <></>
+
     return (
         <>
             <div id="main-holder">
-                <h2 className="subtitle">Play</h2>
-                <div className="play-holder">
-                    <div id="match-made">
-                        <div 
-                            onClick={() => handlePlay(1,1)}
-                            className="match"
-                        >1+1<br/>Bullet
-                        </div>
-                        
-                        <div 
-                            onClick={() => handlePlay(3,1)}
-                            className="match"
-                        >3+1<br/>Blitz
-                        </div>
+                <div id="host-button" onClick={() => setShowCreate(!showCreate)}>Host</div>
 
-                        <div 
-                            onClick={() => handlePlay(10,1)}
-                            className="match"
-                        >10+1<br/>Rapid
-                        </div>
+                <div id="games">
+                    <div id="game-lobby">
+                    {showHostedGames}
                     </div>
-                    <div id="custom">Custom</div>
-                </div>
 
-                <h2 className="subtitle">Recent Games</h2>
-                <div id="chess-history">
-                    <div className={`chess-game ${game1Color}-side`} onClick={() => handleReviewClick(myGames[0]?.id)}>
-                        <MiniChessBoard chessPosition={myGames[0]?.latest_position} myColor={game1Color}/>
-                    </div>
-                    <div className={`chess-game ${game2Color}-side`} onClick={() => handleReviewClick(myGames[1]?.id)}>
-                        <MiniChessBoard chessPosition={myGames[1]?.latest_position} myColor={game2Color}/>
-                    </div>
-                    <div className={`chess-game ${game3Color}-side`} onClick={() => handleReviewClick(myGames[2]?.id)}>
-                        <MiniChessBoard chessPosition={myGames[2]?.latest_position} myColor={game3Color}/>
+                    <div id="active-games">
                     </div>
                 </div>
 
-                <div id="full-history">Full history</div>
+                
             </div>
-            {showSearching}
-            
+            <div>{HostGameSetup}</div>
+            {lobbyDisplay}
         </>
     )
 }

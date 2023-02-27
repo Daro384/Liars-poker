@@ -8,75 +8,119 @@
     transform: translate(-50%);
 }
 
-#match-made {
-    display: flex;
+#host-button {
     text-align: center;
-}
-
-
-div.match {
-    flex: 1;
-    margin: 10% 30px 0 30px;
-    padding: 10px 0 10px 0;
-    font-size: 20px;
-    background-color: rgb(126, 208, 255);
-    border-style: solid;
-    border-width: 2px;
-}
-
-#custom {
-    width: 24%;
-    text-align: center;
-    margin: 5% 0 0 50%;
+    font-size: 50px;
+    padding-top: 20px;
+    height: 80px;
+    width: 200px;
+    background-color: rgba(59, 255, 101, 0.562);
+    margin-top: 8vh;
+    margin-left: 50%;
     transform: translate(-50%);
-    padding: 20px 0 20px 0;
-    font-size: 20px;
-    background-color: rgb(126, 208, 255);
+    border-radius: 1px;
     border-style: solid;
-    border-width: 2px;
 }
 
-div#chess-history {
-    display: flex;
-    margin-top: 50px;
+#games {
+    padding-top: 10%;
+    /* background-color: gray;  */
+    height: 500px;
 }
 
-div.chess-game {
-    margin: 36px;
-    height: 160px;
-    width: 160px;
+#game-lobby{
+    width: 40%;
+    height: 450px;
+    float: left;
+    margin-left: 5%;
+    background-color: rgba(255, 255, 255, 0.5);
+    overflow: auto;
+    border-radius: 20px;
+}
+
+#active-games{
+    width: 40%;
+    height: 450px;
+    float: right;
+    margin-right: 5%;
+    background-color: rgba(255, 255, 255, 0.5);
+    overflow: auto;
+    border-radius: 20px;
+}
+
+#host-create-page {
+    background-color: rgb(114, 174, 224);
+    width: 300px;
+    height: 120px;
+    top: 25%;
+    left: 40%;
+    position: fixed;
+    border-width: 1px;
     border-style: solid;
-    border-width: 2px;
-    background-color: gray;
-    display: grid;
-    grid-template-columns: auto auto auto auto auto auto auto auto;
 }
 
-div.chess-game div {
+#host-create-page input{
+    margin-top: 10%;
+}
+
+#host-create-page label{
+    margin-left: 3%;
+}
+
+#host-create-page input.submitter{
+    margin-left: 50%;
+    transform: translate(-50%);
+}
+
+#exit-button {
+    position: absolute;
+    background-color: white;
     width: 20px;
     height: 20px;
     text-align: center;
+    border-width: 1px;
+    border-style: solid;
+    right: 0;
+    top: 0;
 }
 
-.white-side {
-    transform: rotate(180deg);
-}
-
-#full-history {
-    width: 24%;
-    text-align: center;
-    margin: 5% 0 0 50%;
-    transform: translate(-50%);
-    padding: 20px 0 20px 0;
-    font-size: 20px;
-    background-color: rgb(126, 208, 255);
+.host-card {
     border-style: solid;
     border-width: 2px;
+    margin: 5%;
+    border-radius: 15px;
 }
 
-h2.subtitle {
-    position: relative;
-    text-align: center;
-    margin-bottom: 0;
-    top: 40px;
+.host-card h3{
+    box-sizing: border-box;
+    padding-left: 5px;
+    margin: 15px 0 0 0;
+    width:67%;
+    height: 30px;
+    float:left;
+}
+
+.host-card p {
+    box-sizing: border-box;
+    padding-top: 3px;
+    margin: 15px 0 0 0;
+    width: 33%;
+    height: 30px;
+    float: right;
+}
+
+.host-card button {
+    margin: 0 0 10px 50%;
+    transform: translate(-50%);
+    width: 30%;
+    /* margin */
+}
+
+#lobby-page {
+    background-color: gray;
+    position: absolute;
+    top:0;
+    left:0;
+    width: 200px;
+    height: 200px;
 }

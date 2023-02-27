@@ -1,5 +1,5 @@
 class GameSerializer < ActiveModel::Serializer
-  attributes :id, :white_player_id, :black_player_id, :winner, :ongoing, :latest_position, :end_cause, :time, :increment_time
-  has_many :plies
-  has_many :chats
+  attributes :id, :lobby_name, :ongoing, :rng_hash, :host_id
+  has_many :players
+  has_many :moves
 end

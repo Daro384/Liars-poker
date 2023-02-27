@@ -1,16 +1,20 @@
-class ChatsController < ApplicationController
+class PlayersController < ApplicationController
     rescue_from ActiveRecord::RecordInvalid, with: :render_unprocessable_entity_response
     rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
+    def index
+        render json: Player.all
+    end
+
     def create
-        chat = Chat.create!(chat_params)
-        render json: chat, status: :created
+        player = Player.create!(player_params)
+        render json: player, status: :created
     end
 
     private
-
-    def chat_params
-        params.permit(:message, :user_id, :game_id)
+    #strong parameters
+    def player_params
+        params.permit(:lobby_name, :ongoing, :rng_hash)
     end
 
     def render_unprocessable_entity_response(exception)
@@ -18,7 +22,6 @@ class ChatsController < ApplicationController
     end
 
     def render_not_found_response
-        render json: { error: "Message not found" }, status: :not_found
+        render json: { error: "Player not found" }, status: :not_found
     end
-    
 end

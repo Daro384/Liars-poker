@@ -1,32 +1,26 @@
-class GamesController < ApplicationController
+class ParticipantsController < ApplicationController
     rescue_from ActiveRecord::RecordInvalid, with: :render_unprocessable_entity_response
     rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
     def index
-        render json: Game.all
+        render json: Participant.all
     end
 
     def create
-        game = Game.create!(game_params)
-        render json: game, status: :created
+        participant = Participant.create!(participant_params)
+        render json: participant, status: :created
     end
 
     def destroy
-        game = Game.find(params[:id])
-        game.destroy
+        participant = Participant.find_by!(player_id: params[:id])
+        participant.destroy
         head :no_content
-    end
-
-    def update
-        game = Game.find(params[:id])
-        game.update!(game_params)
-        render json: game, status: :created
     end
 
     private
     #strong parameters
-    def game_params
-        params.permit(:lobby_name, :ongoing, :rng_hash)
+    def participant_params
+        params.permit(:player_id, :host_id, :display_name)
     end
 
     def render_unprocessable_entity_response(exception)
@@ -34,6 +28,6 @@ class GamesController < ApplicationController
     end
 
     def render_not_found_response
-        render json: { error: "Game not found" }, status: :not_found
+        render json: { error: "Participant not found" }, status: :not_found
     end
 end
