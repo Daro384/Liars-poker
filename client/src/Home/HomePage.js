@@ -14,6 +14,7 @@ const HomePage = ({setShowNavbar}) => {
     const [showCreate, setShowCreate] = useState(false)
     const [gameName, setGameName] = useState("")
     const [hostedGames, setHostedGames] = useState([])
+    const [disableJoin, setDisableJoin] = useState(false)
 
     const [selectedLobbyId, setSelectedLobbyId] = useState(null)
     const [lobbyData, setLobbyData] = useState({})
@@ -24,7 +25,7 @@ const HomePage = ({setShowNavbar}) => {
         .then(resp => resp.json())
         .then(mySession => {
             setMe(mySession)
-            setGameName(mySession.username + "'s game")
+            setGameName(mySession.display_name + "'s game")
             intervalId = setInterval(() => {
                 fetch("/hosts")
                 .then(resp => resp.json())
@@ -33,7 +34,7 @@ const HomePage = ({setShowNavbar}) => {
                 })
             }, 3000);
         })
-        return clearInterval(intervalId)
+        return () => clearInterval(intervalId)
     }, [])
 
     //updating lobby data every time we get host data and route to game page when ever game is created
@@ -76,7 +77,6 @@ const HomePage = ({setShowNavbar}) => {
                     display_name:me.display_name
                 })
             }).then(resp => resp.json())
-            .then(console.log)
         })
 
         
@@ -103,16 +103,15 @@ const HomePage = ({setShowNavbar}) => {
     } 
     
     const handleLeave = event => {
+        setDisableJoin(false)
         fetch(`/participants/${me.id}`, {method:"DELETE"})
         .then(setSelectedLobbyId(null))
     }
-
     const handleStart = event => {
-
         const gameBody = {
             lobby_name:gameName,
             ongoing:true,
-            rng_hash:null,
+            rng_hash:lobbyData.rng_seed,
             host_id:lobbyData.id
         }
         let gameId
@@ -139,7 +138,7 @@ const HomePage = ({setShowNavbar}) => {
                 }))
             })  
             Promise.all(promiseList).then(
-                fetch(`/host/${selectedLobbyId}`, {method:'DELETE'}).then(
+                fetch(`/hosts/${selectedLobbyId}`, {method:'DELETE'}).then(
                     navigate(`/game/${gameId}`)
                 )
             )  
@@ -148,6 +147,7 @@ const HomePage = ({setShowNavbar}) => {
 
     const handleJoin = event => {
         setSelectedLobbyId(parseInt(event.target.value))
+        setDisableJoin(true)
 
         fetch(`/participants`, {
             method:"POST",
@@ -165,7 +165,7 @@ const HomePage = ({setShowNavbar}) => {
         <div className="host-card" key={hostData.id}>
             <h3>{hostData.lobby_name}</h3>
             <p>{hostData.participants.length + "/4 players"}</p>
-            <button value={hostData.id} onClick={handleJoin}>Join</button>
+            <button value={hostData.id} onClick={handleJoin} disabled={disableJoin}>Join</button>
         </div>
         )
     }
@@ -189,7 +189,7 @@ const HomePage = ({setShowNavbar}) => {
     return (
         <>
             <div id="main-holder">
-                <div id="host-button" onClick={() => setShowCreate(!showCreate)}>Host</div>
+                <div id="host-button" onClick={() => setShowCreate(!showCreate)}>Create a Lobby</div>
 
                 <div id="games">
                     <div id="game-lobby">

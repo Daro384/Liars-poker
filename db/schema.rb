@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_26_093241) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_28_061733) do
   create_table "games", force: :cascade do |t|
     t.string "lobby_name"
     t.boolean "ongoing"
@@ -18,6 +18,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_26_093241) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "host_id"
+    t.string "loser"
   end
 
   create_table "hosts", force: :cascade do |t|

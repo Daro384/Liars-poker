@@ -23,14 +23,18 @@ class GamesController < ApplicationController
 
     def update
         game = Game.find(params[:id])
-        game.update!(game_params)
+        game.update!(update_params)
         render json: game, status: :created
     end
 
     private
     #strong parameters
     def game_params
-        params.permit(:lobby_name, :ongoing, :rng_hash, :host_id)
+        params.permit(:lobby_name, :ongoing, :rng_hash, :host_id, :loser)
+    end
+
+    def update_params
+        params.permit(:ongoing, :loser)
     end
 
     def render_unprocessable_entity_response(exception)

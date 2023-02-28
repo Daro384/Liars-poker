@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   resources :participants
   resources :hosts
   resources :games
+  resources :moves
   resources :users
 
   post "/login", to: "sessions#create"
