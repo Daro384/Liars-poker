@@ -5,11 +5,9 @@ import "./Home.css"
 import LobbyDisplay from "./LobbyDisplay"
 
 
-const HomePage = ({setShowNavbar}) => {
+const HomePage = () => {
 
     const navigate = useNavigate()
-    setShowNavbar(true)
-
     const [me, setMe] = useState({id:null})
     const [showCreate, setShowCreate] = useState(false)
     const [gameName, setGameName] = useState("")
@@ -116,6 +114,22 @@ const HomePage = ({setShowNavbar}) => {
         }
         let gameId
         const promiseList = []
+
+        const fetchPlayers = (participant) => {
+            fetch("/players", {
+                method:"post",
+                headers: {"content-type":"application/json"},
+                body:JSON.stringify({
+                    player_id:participant.player_id,
+                    display_name:participant.display_name,
+                    game_id:gameId
+                })
+                .then(resp => {
+                    if (resp.error) fetchPlayers(participant)
+                })
+            })
+        }
+
         fetch("/games", {
             method:"post",
             headers: {"content-type":"application/json"},
@@ -125,17 +139,7 @@ const HomePage = ({setShowNavbar}) => {
         .then(gameData => {
             gameId = gameData.id
             lobbyData.participants.forEach(participant => {
-                promiseList.push(fetch("/players", {
-                    method:"post",
-                    headers: {"content-type":"application/json"},
-                    body:JSON.stringify(
-                        {
-                            player_id:participant.player_id,
-                            display_name:participant.display_name,
-                            game_id:gameId
-                        }
-                    )
-                }))
+                promiseList.push(fetchPlayers)
             })  
             Promise.all(promiseList).then(
                 fetch(`/hosts/${selectedLobbyId}`, {method:'DELETE'}).then(

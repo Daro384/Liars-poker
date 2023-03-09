@@ -9,14 +9,9 @@ import GamePage from './Game/GamePage';
 
 function App() {
 
-  const [showNavbar, setShowNavbar] = useState(false)
-  const updateShowBar = (boolean) => {
-    setShowNavbar(boolean)
-  }
-
   return (
     <Router>
-      {/* <NavBar showNavbar={showNavbar}/> */}
+      <NavBar/>
       <Routes>
         <Route
           exact path="/"
@@ -28,7 +23,7 @@ function App() {
         />
         <Route
           exact path="/home"
-          element={<HomePage setShowNavbar={updateShowBar}/>}
+          element={<HomePage/>}
         />
         <Route
           exact path="/game/:id"
